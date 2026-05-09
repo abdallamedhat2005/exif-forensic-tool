@@ -1,0 +1,40 @@
+{
+  "evidence_cairo_center.jpg": {
+    "Image Make": "Samsung",
+    "Image Model": "Galaxy S23",
+    "Image DateTime": "2026:03:14 10:30:00",
+    "Image ExifOffset": "113",
+    "GPS GPSVersionID": "[2, 2, 0, 0]",
+    "GPS GPSLatitudeRef": "N",
+    "GPS GPSLatitude": "[30, 2, 996/25]",
+    "GPS GPSLongitudeRef": "E",
+    "GPS GPSLongitude": "[31, 14, 213/25]",
+    "GPS GPSAltitudeRef": "0",
+    "GPS GPSAltitude": "74",
+    "Image GPSInfo": "147",
+    "EXIF DateTimeOriginal": "2026:03:14 10:30:00"
+  },
+  "evidence_giza.jpg": {
+    "Image Make": "Apple",
+    "Image Model": "iPhone 15 Pro",
+    "Image DateTime": "2026:03:14 14:15:00",
+    "Image ExifOffset": "114",
+    "GPS GPSVersionID": "[2, 2, 0, 0]",
+    "GPS GPSLatitudeRef": "N",
+    "GPS GPSLatitude": "[29, 58, 957/25]",
+    "GPS GPSLongitudeRef": "E",
+    "GPS GPSLongitude": "[31, 7, 57]",
+    "GPS GPSAltitudeRef": "0",
+    "GPS GPSAltitude": "25",
+    "Image GPSInfo": "148",
+    "EXIF DateTimeOriginal": "2026:03:14 14:15:00"
+  },
+  "evidence_suspicious.jpg": {
+    "Image Make": "Unknown",
+    "Image Model": "Unknown Camera",
+    "Image Software": "Adobe Photoshop 2026",
+    "Image DateTime": "2026:03:14 18:00:00",
+    "Image ExifOffset": "138",
+    "EXIF DateTimeOriginal": "2026:03:14 18:00:00"
+  }
+}

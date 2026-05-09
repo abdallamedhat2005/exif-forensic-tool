@@ -1,0 +1,4 @@
+evidence_id,file_name,format,file_size_kb,sha256,timestamp,gps,altitude,anomaly_flags,analyzed_at,analyst
+EVD-001,evidence_cairo_center.jpg,JPEG,16.8,7f6262ee7af019e6002fd16dd002a3e00b30575fed4e2a1266487dad77408b16,2026:03:14 10:30:00,"30.0444,31.2357",74.0,None,2026-05-07 21:26:52,Forensic Tool v2.0
+EVD-002,evidence_giza.jpg,JPEG,17.5,ea38997592c989672e7fa560d92c6073a91e0251f8ba0db3cc81d889efa20123,2026:03:14 14:15:00,"29.9773,31.1325",25.0,None,2026-05-07 21:26:52,Forensic Tool v2.0
+EVD-003,evidence_suspicious.jpg,JPEG,16.7,c755f8f2a8e9ed74af94c827b18e3b060c59b7cf02fd580faec87fb2d33fb1e4,2026:03:14 18:00:00,"nan,nan",nan,⚠ Missing GPS coordinates | ⚠ Software tag: Adobe Photoshop 2026 — possible post-processing,2026-05-07 21:26:52,Forensic Tool v2.0

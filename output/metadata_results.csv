@@ -1,0 +1,4 @@
+file_name,file_size_kb,format,sha256,timestamp,timestamp_iso,camera_make,camera_model,software,flash,focal_length,iso,exposure,aperture,image_width,image_height,orientation,gps_latitude,gps_longitude,gps_altitude,has_exif,anomaly_flags,anomaly_count
+evidence_cairo_center.jpg,16.8,JPEG,7f6262ee7af019e6002fd16dd002a3e00b30575fed4e2a1266487dad77408b16,2026:03:14 10:30:00,2026-03-14T10:30:00,Samsung,Galaxy S23,,,,,,,800,600,,30.0444,31.2357,74.0,True,None,0
+evidence_giza.jpg,17.5,JPEG,ea38997592c989672e7fa560d92c6073a91e0251f8ba0db3cc81d889efa20123,2026:03:14 14:15:00,2026-03-14T14:15:00,Apple,iPhone 15 Pro,,,,,,,800,600,,29.9773,31.1325,25.0,True,None,0
+evidence_suspicious.jpg,16.7,JPEG,c755f8f2a8e9ed74af94c827b18e3b060c59b7cf02fd580faec87fb2d33fb1e4,2026:03:14 18:00:00,2026-03-14T18:00:00,Unknown,Unknown Camera,Adobe Photoshop 2026,,,,,,800,600,,,,,True,⚠ Missing GPS coordinates | ⚠ Software tag: Adobe Photoshop 2026 — possible post-processing,2

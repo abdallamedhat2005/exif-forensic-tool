@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_ed2166aa488bfb59424b3b30af2d46c7 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    
+    <div style="position:fixed;bottom:30px;left:30px;z-index:9999;background:white;
+                padding:12px 16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:13px">
+      <b>🗺️ Map Legend</b><br>
+      <span style="color:#2980b9">🔵</span> Clean image<br>
+      <span style="color:#e67e22">🟠</span> Minor anomaly<br>
+      <span style="color:#c0392b">🔴</span> Suspicious<br>
+      <span style="color:#e74c3c">— —</span> Timeline path
+    </div>
+    
+            <div class="folium-map" id="map_ed2166aa488bfb59424b3b30af2d46c7" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_ed2166aa488bfb59424b3b30af2d46c7 = L.map(
+                "map_ed2166aa488bfb59424b3b30af2d46c7",
+                {
+                    center: [30.010849999999998, 31.1841],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_a3d4afb5fe90dd0cfc5ae88976197070 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_a3d4afb5fe90dd0cfc5ae88976197070.addTo(map_ed2166aa488bfb59424b3b30af2d46c7);
+        
+    
+            var marker_cluster_9c2ca5c77c64f3d3ce12a7d48c8e0e88 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_fe9fdcc00d82f64f938a2f484fca314c = L.marker(
+                [30.0444, 31.2357],
+                {
+}
+            ).addTo(marker_cluster_9c2ca5c77c64f3d3ce12a7d48c8e0e88);
+        
+    
+            var icon_a649c38161c7640f1c0f59ec0f0b2d74 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "camera",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_66c4b234e6337d9f5aa1abcbf633512e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0b3a467f19f88bb40791d9fa28fbed0d = $(`<div id="html_0b3a467f19f88bb40791d9fa28fbed0d" style="width: 100.0%; height: 100.0%;">         <div style="font-family:Arial,sans-serif;min-width:220px;font-size:13px">           <div style="background:#0b3d5c;color:white;padding:8px 12px;border-radius:4px 4px 0 0;font-weight:bold">             📁 evidence_cairo_center.jpg           </div>           <div style="padding:10px 12px;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px">             🕐 <b>Time:</b> 2026:03:14 10:30:00<br>             📷 <b>Camera:</b> Samsung Galaxy S23<br>             📍 <b>GPS:</b> 30.0444, 31.2357<br>             🏔️ <b>Alt:</b> 74.0m<br>             🔐 <b>SHA-256:</b><br>             <span style="font-size:10px;word-break:break-all;color:#555">7f6262ee7af019e6002fd16dd002a3e00b30575fed4e2a1266487dad77408b16</span><br>             <br>✅ <b style='color:#27ae60'>No anomalies detected</b>           </div>         </div></div>`)[0];
+                popup_66c4b234e6337d9f5aa1abcbf633512e.setContent(html_0b3a467f19f88bb40791d9fa28fbed0d);
+            
+        
+
+        marker_fe9fdcc00d82f64f938a2f484fca314c.bindPopup(popup_66c4b234e6337d9f5aa1abcbf633512e)
+        ;
+
+        
+    
+    
+            marker_fe9fdcc00d82f64f938a2f484fca314c.bindTooltip(
+                `<div>
+                     📁 evidence_cairo_center.jpg | 2026:03:14 10:30:00
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_fe9fdcc00d82f64f938a2f484fca314c.setIcon(icon_a649c38161c7640f1c0f59ec0f0b2d74);
+            
+    
+            var marker_8c20af1d2d435fc08fe5e484f6154b3d = L.marker(
+                [29.9773, 31.1325],
+                {
+}
+            ).addTo(marker_cluster_9c2ca5c77c64f3d3ce12a7d48c8e0e88);
+        
+    
+            var icon_c08aa6342643ea7141ef173125e8ac89 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "camera",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3a29018cf1612b6ff4ca0729e50d5280 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d4390795fed851465aae17f620148715 = $(`<div id="html_d4390795fed851465aae17f620148715" style="width: 100.0%; height: 100.0%;">         <div style="font-family:Arial,sans-serif;min-width:220px;font-size:13px">           <div style="background:#0b3d5c;color:white;padding:8px 12px;border-radius:4px 4px 0 0;font-weight:bold">             📁 evidence_giza.jpg           </div>           <div style="padding:10px 12px;border:1px solid #ddd;border-top:none;border-radius:0 0 4px 4px">             🕐 <b>Time:</b> 2026:03:14 14:15:00<br>             📷 <b>Camera:</b> Apple iPhone 15 Pro<br>             📍 <b>GPS:</b> 29.9773, 31.1325<br>             🏔️ <b>Alt:</b> 25.0m<br>             🔐 <b>SHA-256:</b><br>             <span style="font-size:10px;word-break:break-all;color:#555">ea38997592c989672e7fa560d92c6073a91e0251f8ba0db3cc81d889efa20123</span><br>             <br>✅ <b style='color:#27ae60'>No anomalies detected</b>           </div>         </div></div>`)[0];
+                popup_3a29018cf1612b6ff4ca0729e50d5280.setContent(html_d4390795fed851465aae17f620148715);
+            
+        
+
+        marker_8c20af1d2d435fc08fe5e484f6154b3d.bindPopup(popup_3a29018cf1612b6ff4ca0729e50d5280)
+        ;
+
+        
+    
+    
+            marker_8c20af1d2d435fc08fe5e484f6154b3d.bindTooltip(
+                `<div>
+                     📁 evidence_giza.jpg | 2026:03:14 14:15:00
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_8c20af1d2d435fc08fe5e484f6154b3d.setIcon(icon_c08aa6342643ea7141ef173125e8ac89);
+            
+    
+            marker_cluster_9c2ca5c77c64f3d3ce12a7d48c8e0e88.addTo(map_ed2166aa488bfb59424b3b30af2d46c7);
+        
+    
+            var poly_line_c898eb06a05a8a70736c91ecbea17d4b = L.polyline(
+                [[30.0444, 31.2357], [29.9773, 31.1325]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": "8", "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_ed2166aa488bfb59424b3b30af2d46c7);
+        
+    
+            poly_line_c898eb06a05a8a70736c91ecbea17d4b.bindTooltip(
+                `<div>
+                     📅 Investigation Timeline Path
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var feature_group_4b9ecea736796fa9c6986f93c3e8bdc6 = L.featureGroup(
+                {
+}
+            );
+        
+    
+            var marker_77c9af3d8a2986635720f105eb814557 = L.marker(
+                [30.0444, 31.2357],
+                {
+}
+            ).addTo(feature_group_4b9ecea736796fa9c6986f93c3e8bdc6);
+        
+    
+            var div_icon_9816004ea3da7b7293c1a8a20903863d = L.divIcon({
+  "html": "\u003cdiv style=\"background:#e74c3c;color:white;border-radius:50%;\n                               width:24px;height:24px;display:flex;align-items:center;\n                               justify-content:center;font-weight:bold;font-size:12px;\n                               border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)\"\u003e1\u003c/div\u003e",
+  "iconSize": [24, 24],
+  "iconAnchor": [12, 12],
+  "className": "empty",
+});
+        
+    
+            marker_77c9af3d8a2986635720f105eb814557.bindTooltip(
+                `<div>
+                     #1 — evidence_cairo_center.jpg @ 2026:03:14 10:30:00
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_77c9af3d8a2986635720f105eb814557.setIcon(div_icon_9816004ea3da7b7293c1a8a20903863d);
+            
+    
+            var marker_52644634406d6a9c8fb848bbf90abd70 = L.marker(
+                [29.9773, 31.1325],
+                {
+}
+            ).addTo(feature_group_4b9ecea736796fa9c6986f93c3e8bdc6);
+        
+    
+            var div_icon_fb53bbdc9fd99097246edaf0585b05b9 = L.divIcon({
+  "html": "\u003cdiv style=\"background:#e74c3c;color:white;border-radius:50%;\n                               width:24px;height:24px;display:flex;align-items:center;\n                               justify-content:center;font-weight:bold;font-size:12px;\n                               border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3)\"\u003e2\u003c/div\u003e",
+  "iconSize": [24, 24],
+  "iconAnchor": [12, 12],
+  "className": "empty",
+});
+        
+    
+            marker_52644634406d6a9c8fb848bbf90abd70.bindTooltip(
+                `<div>
+                     #2 — evidence_giza.jpg @ 2026:03:14 14:15:00
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_52644634406d6a9c8fb848bbf90abd70.setIcon(div_icon_fb53bbdc9fd99097246edaf0585b05b9);
+            
+    
+            feature_group_4b9ecea736796fa9c6986f93c3e8bdc6.addTo(map_ed2166aa488bfb59424b3b30af2d46c7);
+        
+    
+            var layer_control_a847f46bc3207d069913e9f76484f718_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_a3d4afb5fe90dd0cfc5ae88976197070,
+                },
+                overlays :  {
+                    "\ud83d\udccd All Evidence" : marker_cluster_9c2ca5c77c64f3d3ce12a7d48c8e0e88,
+                    "\ud83d\udcc5 Timeline Order" : feature_group_4b9ecea736796fa9c6986f93c3e8bdc6,
+                },
+            };
+            let layer_control_a847f46bc3207d069913e9f76484f718 = L.control.layers(
+                layer_control_a847f46bc3207d069913e9f76484f718_layers.base_layers,
+                layer_control_a847f46bc3207d069913e9f76484f718_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_ed2166aa488bfb59424b3b30af2d46c7);
+
+        
+</script>
+</html>

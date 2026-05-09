@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forensic Report — CASE-001</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#f0f2f5;color:#222}
+  .header{background:linear-gradient(135deg,#0b3d5c,#1a6b8a);color:white;padding:28px 40px}
+  .header h1{font-size:24px;margin-bottom:6px}
+  .header p{font-size:13px;opacity:.85}
+  .stats{display:flex;gap:16px;padding:24px 40px;background:white;border-bottom:2px solid #e0e0e0}
+  .stat{background:#f8f9fa;border-radius:10px;padding:16px 24px;text-align:center;flex:1;border:1px solid #e0e0e0}
+  .stat .num{font-size:32px;font-weight:bold;color:#0b3d5c}
+  .stat .lbl{font-size:12px;color:#666;margin-top:4px}
+  .section{padding:24px 40px}
+  .section h2{font-size:16px;color:#0b3d5c;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #0b3d5c}
+  table{width:100%;border-collapse:collapse;font-size:12px;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  th{background:#0b3d5c;color:white;padding:11px 14px;text-align:left;font-size:12px}
+  td{padding:10px 14px;border-bottom:1px solid #eee;vertical-align:top}
+  tr:hover td{background:#f0f6ff}
+  .hash{font-size:10px;word-break:break-all;color:#888;max-width:180px}
+  .tl-item{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start}
+  .tl-dot{width:14px;height:14px;border-radius:50%;margin-top:4px;flex-shrink:0}
+  .tl-blue{background:#2980b9}.tl-orange{background:#e67e22}.tl-red{background:#c0392b}
+  .tl-content{background:white;border-radius:8px;padding:12px 16px;flex:1;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .tl-title{font-weight:bold;font-size:14px;margin-bottom:4px}
+  .tl-meta{font-size:12px;color:#666}
+  .tl-flag{font-size:12px;color:#c0392b;margin-top:6px}
+  .tl-ok{font-size:12px;color:#27ae60;margin-top:6px}
+  .footer{text-align:center;padding:24px;font-size:11px;color:#aaa;background:white;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔍 Digital Image Metadata Forensic Report</h1>
+  <p>Case ID: <b>CASE-001</b> &nbsp;|&nbsp; Generated: 2026-05-07 21:26:52 &nbsp;|&nbsp; CET333 Advanced Digital Forensics — Elsewedy University of Technology</p>
+</div>
+<div class="stats">
+  <div class="stat"><div class="num">3</div><div class="lbl">📁 Total Images</div></div>
+  <div class="stat"><div class="num">2</div><div class="lbl">📍 With GPS</div></div>
+  <div class="stat"><div class="num">1</div><div class="lbl">⚠️ Anomalies</div></div>
+  <div class="stat"><div class="num">2</div><div class="lbl">✅ Clean Files</div></div>
+</div>
+<div class="section">
+  <h2>📅 Investigation Timeline</h2>
+  
+        <div class="tl-item">
+          <div class="tl-dot tl-blue"></div>
+          <div class="tl-content">
+            <div class="tl-title">📁 evidence_cairo_center.jpg</div>
+            <div class="tl-meta">🕐 2026:03:14 10:30:00 &nbsp;|&nbsp; 📍 30.0444, 31.2357 &nbsp;|&nbsp; 📷 Samsung Galaxy S23</div>
+            <div class="tl-ok">✅ No anomalies</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-blue"></div>
+          <div class="tl-content">
+            <div class="tl-title">📁 evidence_giza.jpg</div>
+            <div class="tl-meta">🕐 2026:03:14 14:15:00 &nbsp;|&nbsp; 📍 29.9773, 31.1325 &nbsp;|&nbsp; 📷 Apple iPhone 15 Pro</div>
+            <div class="tl-ok">✅ No anomalies</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot tl-red"></div>
+          <div class="tl-content">
+            <div class="tl-title">📁 evidence_suspicious.jpg</div>
+            <div class="tl-meta">🕐 2026:03:14 18:00:00 &nbsp;|&nbsp; 📍 nan, nan &nbsp;|&nbsp; 📷 Unknown Unknown Camera</div>
+            <div class="tl-flag">⚠️ ⚠ Missing GPS coordinates | ⚠ Software tag: Adobe Photoshop 2026 — possible post-processing</div>
+          </div>
+        </div>
+</div>
+<div class="section">
+  <h2>📊 Evidence Metadata Table</h2>
+  <table>
+    <tr>
+      <th>File</th><th>Timestamp</th><th>Camera</th>
+      <th>GPS Coordinates</th><th>Altitude</th><th>Anomaly Flags</th><th>SHA-256</th>
+    </tr>
+    
+        <tr>
+          <td><b>evidence_cairo_center.jpg</b><br><small>JPEG · 16.8 KB</small></td>
+          <td>2026:03:14 10:30:00</td>
+          <td>Samsung Galaxy S23</td>
+          <td>30.0444<br>31.2357</td>
+          <td>74.0</td>
+          <td style="color:#27ae60;font-weight:bold">None</td>
+          <td class="hash">7f6262ee7af019e6002fd16dd002a3e00b30575fed4e2a1266487dad77408b16</td>
+        </tr>
+        <tr>
+          <td><b>evidence_giza.jpg</b><br><small>JPEG · 17.5 KB</small></td>
+          <td>2026:03:14 14:15:00</td>
+          <td>Apple iPhone 15 Pro</td>
+          <td>29.9773<br>31.1325</td>
+          <td>25.0</td>
+          <td style="color:#27ae60;font-weight:bold">None</td>
+          <td class="hash">ea38997592c989672e7fa560d92c6073a91e0251f8ba0db3cc81d889efa20123</td>
+        </tr>
+        <tr>
+          <td><b>evidence_suspicious.jpg</b><br><small>JPEG · 16.7 KB</small></td>
+          <td>2026:03:14 18:00:00</td>
+          <td>Unknown Unknown Camera</td>
+          <td>nan<br>nan</td>
+          <td>nan</td>
+          <td style="color:#c0392b;font-weight:bold">⚠ Missing GPS coordinates | ⚠ Software tag: Adobe Photoshop 2026 — possible post-processing</td>
+          <td class="hash">c755f8f2a8e9ed74af94c827b18e3b060c59b7cf02fd580faec87fb2d33fb1e4</td>
+        </tr>
+  </table>
+</div>
+<div class="footer">
+  This report was generated automatically by the Digital Forensic Metadata Tool.<br>
+  For official use only — CET333 Advanced Digital Forensics — Elsewedy University of Technology
+</div>
+</body>
+</html>

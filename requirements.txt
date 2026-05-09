@@ -1,0 +1,6 @@
+Pillow
+exifread
+folium
+pandas
+piexif
+reportlab
