@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="slides-format" content="viewport">
+    <title>Digital Image Forensics — CET333</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-bg: #0a0f1e;
+            --color-bg-deep: #050810;
+            --color-surface: #111827;
+            --color-text: #f1f5f9;
+            --color-text-secondary: #cbd5e1;
+            --color-text-muted: #64748b;
+            --color-accent-1: #38bdf8;
+            --color-accent-2: #818cf8;
+            --color-accent-3: #34d399;
+            --color-glass-bg: rgba(255,255,255,0.05);
+            --color-glass-border: rgba(255,255,255,0.08);
+            --color-vignette: rgba(0,0,0,0.5);
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+    </style>
+    <style>
+        :root {
+            --color-bg: #0a0f1e;
+            --color-text: #f1f5f9;
+            --glow-color-rgb: 56,189,248;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { background: var(--color-bg); margin: 0; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; }
+        .deck { width: 100vw; height: 100vh; position: relative; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.95); transition: opacity 0.7s ease, transform 0.7s ease; pointer-events: none; overflow: hidden; }
+        .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+        .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1100px; padding: clamp(1.5rem, 4vw, 3.5rem); }
+        .nav-controls { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; z-index: 100; background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 10px 22px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
+        .nav-btn { width: 38px; height: 38px; border: none; background: rgba(255,255,255,0.05); color: #38bdf8; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .nav-btn:hover { background: rgba(255,255,255,0.12); }
+        .slide-dots { display: flex; gap: 7px; }
+        .slide-dots .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.3s, transform 0.3s; }
+        .slide-dots .dot.active { background: #38bdf8; transform: scale(1.3); }
+        .slide-counter { font-size: 0.78rem; color: #64748b; min-width: 38px; text-align: center; }
+        .reveal { opacity: 0; transform: translateY(20px); }
+
+        .text-glow { text-shadow: 0 0 20px rgba(56,189,248,0.5), 0 0 40px rgba(56,189,248,0.2); }
+        .stat-glow { text-shadow: 0 0 30px rgba(56,189,248,0.6), 0 0 60px rgba(56,189,248,0.25); }
+
+        @keyframes float-slow {
+            0% { transform: translate(0,0) scale(1); }
+            25% { transform: translate(60px,-50px) scale(1.12); }
+            50% { transform: translate(-40px,40px) scale(0.9); }
+            75% { transform: translate(50px,20px) scale(1.08); }
+            100% { transform: translate(0,0) scale(1); }
+        }
+        @keyframes float-drift {
+            0% { transform: translate(0,0) scale(1) rotate(0deg); }
+            33% { transform: translate(-50px,-60px) scale(1.15) rotate(3deg); }
+            66% { transform: translate(40px,30px) scale(0.88) rotate(-2deg); }
+            100% { transform: translate(0,0) scale(1) rotate(0deg); }
+        }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes glow-pulse {
+            0%,100% { text-shadow: 0 0 20px rgba(56,189,248,0.5), 0 0 40px rgba(56,189,248,0.2); }
+            50% { text-shadow: 0 0 30px rgba(56,189,248,0.8), 0 0 60px rgba(56,189,248,0.3); }
+        }
+        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+
+        .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(80px); animation: float-slow 10s ease-in-out infinite; }
+        .blob:nth-child(2) { animation: float-drift 14s ease-in-out infinite; }
+        .blob:nth-child(3) { animation: float-slow 18s ease-in-out infinite reverse; }
+
+        .slide::before {
+            content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 256px 256px; opacity: 0.03; mix-blend-mode: overlay;
+        }
+        .slide::after {
+            content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, var(--color-vignette) 100%);
+        }
+
+        /* Bar fills */
+        .bar-track { background: rgba(255,255,255,0.06); border-radius: 6px; height: 28px; position: relative; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 6px; width: 0%; transition: width 0.8s ease; }
+        .bar-label { font-size: 0.78rem; color: #94a3b8; margin-bottom: 4px; }
+        .bar-val { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; font-weight: 600; color: #f1f5f9; }
+
+        /* Timeline */
+        .timeline-line { position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #38bdf8, #818cf8, #34d399); }
+        .timeline-dot { width: 14px; height: 14px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px rgba(56,189,248,0.6); flex-shrink: 0; margin-top: 4px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="mouse-spotlight" style="position:fixed;inset:0;z-index:99;pointer-events:none;"></div>
+
+<div class="deck">
+
+    <!-- SLIDE 1: TITLE -->
+    <div class="slide slide-1 active" data-slide="1">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:520px;height:520px;top:-120px;right:-100px;background:#38bdf8;opacity:0.13;"></div>
+            <div class="blob" style="width:320px;height:320px;bottom:-80px;left:-60px;background:#818cf8;opacity:0.11;"></div>
+            <div class="blob" style="width:220px;height:220px;top:45%;left:18%;background:#34d399;opacity:0.08;"></div>
+        </div>
+        <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;width:100%;height:100%;"></canvas>
+        <div class="content text-center">
+            <div style="font-size:90px;margin-bottom:1.2rem;animation:float 3s ease-in-out infinite;" class="reveal">🔍</div>
+            <h1 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(2.4rem,5.5vw,4.5rem);font-weight:700;background:linear-gradient(135deg,#38bdf8,#818cf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:1rem;" class="reveal">
+                Digital Image Metadata<br>Extraction & Geolocation
+            </h1>
+            <p style="font-size:clamp(0.85rem,1.4vw,1.1rem);color:#64748b;letter-spacing:5px;text-transform:uppercase;margin-bottom:2rem;" class="reveal">CET333 — Advanced Digital Forensics · Spring 2026</p>
+            <div style="display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;" class="reveal">
+                <span style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);padding:6px 18px;border-radius:20px;font-size:0.85rem;color:#38bdf8;">Elsewedy University of Technology</span>
+                <span style="background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.2);padding:6px 18px;border-radius:20px;font-size:0.85rem;color:#818cf8;">Dr. Ayman Taha</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: THE PROBLEM -->
+    <div class="slide slide-2" data-slide="2">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#818cf8;opacity:0.09;"></div>
+            <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#38bdf8;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#38bdf8;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">The Problem</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:1.8rem;line-height:1.2;" class="reveal">Hidden Evidence Inside Every Photo</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;">
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.4rem;" class="reveal">
+                    <div style="font-size:2rem;margin-bottom:0.7rem;">📷</div>
+                    <h3 style="font-size:1rem;font-weight:600;color:#38bdf8;margin-bottom:0.5rem;">EXIF Metadata Ignored</h3>
+                    <p style="font-size:0.88rem;color:#94a3b8;line-height:1.6;">Every digital image carries hidden metadata — GPS coordinates, camera model, timestamp — yet most investigators lack tools to extract and analyze this data systematically.</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.4rem;" class="reveal">
+                    <div style="font-size:2rem;margin-bottom:0.7rem;">🗺️</div>
+                    <h3 style="font-size:1rem;font-weight:600;color:#818cf8;margin-bottom:0.5rem;">No Geolocation Timeline</h3>
+                    <p style="font-size:0.88rem;color:#94a3b8;line-height:1.6;">GPS data embedded in images can place a suspect at a crime scene, but manually decoding DMS coordinates and mapping locations is time-consuming and error-prone.</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.4rem;" class="reveal">
+                    <div style="font-size:2rem;margin-bottom:0.7rem;">⚠️</div>
+                    <h3 style="font-size:1rem;font-weight:600;color:#f59e0b;margin-bottom:0.5rem;">Manipulation Undetected</h3>
+                    <p style="font-size:0.88rem;color:#94a3b8;line-height:1.6;">Photos edited in Photoshop or stripped of metadata raise red flags, but without automated anomaly detection these signs go unnoticed in bulk evidence.</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.4rem;" class="reveal">
+                    <div style="font-size:2rem;margin-bottom:0.7rem;">⛓️</div>
+                    <h3 style="font-size:1rem;font-weight:600;color:#34d399;margin-bottom:0.5rem;">No Chain of Custody</h3>
+                    <p style="font-size:0.88rem;color:#94a3b8;line-height:1.6;">Digital evidence requires cryptographic integrity verification. Without SHA-256 hashing and audit logs, evidence integrity cannot be proven in court.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: OUR SOLUTION -->
+    <div class="slide slide-3" data-slide="3">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:400px;height:400px;top:-90px;left:-80px;background:#34d399;opacity:0.09;"></div>
+            <div class="blob" style="width:280px;height:280px;bottom:-70px;right:-50px;background:#38bdf8;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#34d399;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Our Solution</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:0.4rem;line-height:1.2;" class="reveal">Forensic Tool v2.0</h2>
+            <p style="font-size:0.95rem;color:#94a3b8;margin-bottom:1.6rem;" class="reveal">A complete Python-based forensic investigation platform for digital image analysis</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+                <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">🔬</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#38bdf8;margin-bottom:0.4rem;">EXIF Extraction</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">Full metadata extraction — camera, timestamp, flash, ISO, focal length, aperture from JPG/JPEG/TIFF/PNG</p>
+                </div>
+                <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">🗺️</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#818cf8;margin-bottom:0.4rem;">GPS Mapping</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">DMS → Decimal conversion, interactive Folium map with clustered markers and timestamped timeline</p>
+                </div>
+                <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">⚠️</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#34d399;margin-bottom:0.4rem;">Anomaly Detection</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">5 automated checks: missing EXIF, no timestamp, no GPS, software post-processing tag, no camera model</p>
+                </div>
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">📋</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#f59e0b;margin-bottom:0.4rem;">Forensic Report</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">Auto-generated HTML report with full evidence table, case ID, and analyst signature</p>
+                </div>
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">🔐</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#ef4444;margin-bottom:0.4rem;">Chain of Custody</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">SHA-256 hash for every file, timestamped analysis log in CSV, evidence IDs (EVD-001, EVD-002...)</p>
+                </div>
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.18);border-radius:14px;padding:1.3rem;text-align:center;" class="reveal">
+                    <div style="font-size:2.2rem;margin-bottom:0.6rem;">📊</div>
+                    <h3 style="font-size:0.92rem;font-weight:600;color:#a855f7;margin-bottom:0.4rem;">Multi-Format Output</h3>
+                    <p style="font-size:0.8rem;color:#94a3b8;line-height:1.5;">HTML report + interactive map + CSV results + chain of custody CSV + raw JSON metadata</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: TECH STACK -->
+    <div class="slide slide-4" data-slide="4">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:350px;height:350px;top:-80px;right:-80px;background:#38bdf8;opacity:0.08;"></div>
+            <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#818cf8;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#38bdf8;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Tech Stack</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">Architecture & Libraries</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start;">
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">Core Libraries</h3>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="display:flex;align-items:center;gap:0.8rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.8rem 1rem;">
+                            <span style="font-size:1.4rem;">🐍</span>
+                            <div><div style="font-size:0.9rem;font-weight:600;color:#f1f5f9;">Python 3.x</div><div style="font-size:0.75rem;color:#64748b;">Core language & CLI with argparse</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.8rem 1rem;">
+                            <span style="font-size:1.4rem;">📸</span>
+                            <div><div style="font-size:0.9rem;font-weight:600;color:#38bdf8;">exifread + Pillow</div><div style="font-size:0.75rem;color:#64748b;">EXIF extraction from JPG/TIFF/PNG</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.8rem 1rem;">
+                            <span style="font-size:1.4rem;">🗺️</span>
+                            <div><div style="font-size:0.9rem;font-weight:600;color:#818cf8;">Folium</div><div style="font-size:0.75rem;color:#64748b;">Interactive map + MarkerCluster + TimestampedGeoJson</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.8rem 1rem;">
+                            <span style="font-size:1.4rem;">📊</span>
+                            <div><div style="font-size:0.9rem;font-weight:600;color:#34d399;">Pandas</div><div style="font-size:0.75rem;color:#64748b;">Data processing & CSV export</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.8rem 1rem;">
+                            <span style="font-size:1.4rem;">🔐</span>
+                            <div><div style="font-size:0.9rem;font-weight:600;color:#f59e0b;">hashlib</div><div style="font-size:0.75rem;color:#64748b;">SHA-256 integrity verification</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">System Architecture</h3>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:1.3rem;">
+                        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                            <div style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.2);border-radius:8px;padding:0.7rem;font-size:0.82rem;color:#38bdf8;text-align:center;font-weight:600;">📁 Input: Evidence Folder (--input)</div>
+                            <div style="text-align:center;color:#38bdf8;font-size:0.9rem;">↓</div>
+                            <div style="background:rgba(129,140,248,0.12);border:1px solid rgba(129,140,248,0.2);border-radius:8px;padding:0.7rem;font-size:0.82rem;color:#818cf8;text-align:center;font-weight:600;">🔬 extract_record() — EXIF + Hash + Anomaly</div>
+                            <div style="text-align:center;color:#818cf8;font-size:0.9rem;">↓</div>
+                            <div style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:0.7rem;font-size:0.82rem;color:#34d399;text-align:center;font-weight:600;">🗺️ build_map() — Folium Interactive Map</div>
+                            <div style="text-align:center;color:#34d399;font-size:0.9rem;">↓</div>
+                            <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.7rem;font-size:0.82rem;color:#f59e0b;text-align:center;font-weight:600;">📋 Output: HTML + CSV + JSON + Map</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.8rem;font-size:0.78rem;color:#64748b;">
+                        <span style="color:#38bdf8;font-family:monospace;">python forensic_tool.py --input evidence/ --output output/</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: LIVE RESULTS -->
+    <div class="slide slide-5" data-slide="5">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:360px;height:360px;top:-70px;right:-70px;background:#34d399;opacity:0.09;"></div>
+            <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:#38bdf8;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#34d399;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Live Results</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">Evidence Analysis — 3 Test Images</h2>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;">
+                <div style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:1.2rem;text-align:center;" class="reveal">
+                    <div style="font-size:1.8rem;font-weight:700;color:#34d399;" class="glow-pulse" data-count="3">0</div>
+                    <div style="font-size:0.78rem;color:#64748b;text-transform:uppercase;letter-spacing:2px;margin-top:4px;">Images Analyzed</div>
+                </div>
+                <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:1.2rem;text-align:center;" class="reveal">
+                    <div style="font-size:1.8rem;font-weight:700;color:#38bdf8;" class="glow-pulse" data-count="2">0</div>
+                    <div style="font-size:0.78rem;color:#64748b;text-transform:uppercase;letter-spacing:2px;margin-top:4px;">GPS Locations Found</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:14px;padding:1.2rem;text-align:center;" class="reveal">
+                    <div style="font-size:1.8rem;font-weight:700;color:#ef4444;" class="glow-pulse" data-count="2">0</div>
+                    <div style="font-size:0.78rem;color:#64748b;text-transform:uppercase;letter-spacing:2px;margin-top:4px;">Anomalies Detected</div>
+                </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;" class="reveal">
+                <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.06);">
+                            <th style="padding:0.7rem 1rem;text-align:left;color:#64748b;font-weight:500;">File</th>
+                            <th style="padding:0.7rem 1rem;text-align:left;color:#64748b;font-weight:500;">Camera</th>
+                            <th style="padding:0.7rem 1rem;text-align:left;color:#64748b;font-weight:500;">Timestamp</th>
+                            <th style="padding:0.7rem 1rem;text-align:left;color:#64748b;font-weight:500;">GPS</th>
+                            <th style="padding:0.7rem 1rem;text-align:left;color:#64748b;font-weight:500;">Anomalies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.65rem 1rem;color:#f1f5f9;">evidence_cairo_center.jpg</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">Samsung Galaxy S23</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">2026-03-14 10:30</td>
+                            <td style="padding:0.65rem 1rem;color:#34d399;">30.0444, 31.2357</td>
+                            <td style="padding:0.65rem 1rem;"><span style="background:rgba(52,211,153,0.15);color:#34d399;padding:2px 8px;border-radius:20px;font-size:0.72rem;">✓ Clean</span></td>
+                        </tr>
+                        <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:0.65rem 1rem;color:#f1f5f9;">evidence_giza.jpg</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">Apple iPhone 15 Pro</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">2026-03-14 14:15</td>
+                            <td style="padding:0.65rem 1rem;color:#34d399;">29.9773, 31.1325</td>
+                            <td style="padding:0.65rem 1rem;"><span style="background:rgba(52,211,153,0.15);color:#34d399;padding:2px 8px;border-radius:20px;font-size:0.72rem;">✓ Clean</span></td>
+                        </tr>
+                        <tr style="border-top:1px solid rgba(255,255,255,0.05);background:rgba(239,68,68,0.04);">
+                            <td style="padding:0.65rem 1rem;color:#f1f5f9;">evidence_suspicious.jpg</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">Unknown Camera</td>
+                            <td style="padding:0.65rem 1rem;color:#94a3b8;">2026-03-14 18:00</td>
+                            <td style="padding:0.65rem 1rem;color:#ef4444;">⚠ Missing</td>
+                            <td style="padding:0.65rem 1rem;"><span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:2px 8px;border-radius:20px;font-size:0.72rem;">⚠ 2 Flags</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: ANOMALY DETECTION -->
+    <div class="slide slide-6" data-slide="6">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:380px;height:380px;top:-80px;left:-80px;background:#ef4444;opacity:0.08;"></div>
+            <div class="blob" style="width:250px;height:250px;bottom:-60px;right:-50px;background:#f59e0b;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#ef4444;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Feature Deep Dive</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">Anomaly Detection Engine</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;align-items:start;">
+                <div class="reveal">
+                    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1rem;line-height:1.6;">5 automated checks run on every image. The suspicious file (<code style="color:#ef4444;background:rgba(239,68,68,0.1);padding:1px 5px;border-radius:4px;">evidence_suspicious.jpg</code>) triggered 2 flags — indicating possible evidence tampering:</p>
+                    <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;">
+                            <span style="color:#ef4444;font-size:1.1rem;">⚠</span>
+                            <span style="font-size:0.85rem;color:#fca5a5;">Missing GPS coordinates</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;">
+                            <span style="color:#ef4444;font-size:1.1rem;">⚠</span>
+                            <span style="font-size:0.85rem;color:#fca5a5;">Software tag: Adobe Photoshop 2026 — possible post-processing</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:10px;">
+                            <span style="color:#34d399;font-size:1.1rem;">✓</span>
+                            <span style="font-size:0.85rem;color:#6ee7b7;">No EXIF metadata (intentional stripping check)</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:10px;">
+                            <span style="color:#34d399;font-size:1.1rem;">✓</span>
+                            <span style="font-size:0.85rem;color:#6ee7b7;">Missing original timestamp check</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15);border-radius:10px;">
+                            <span style="color:#34d399;font-size:1.1rem;">✓</span>
+                            <span style="font-size:0.85rem;color:#6ee7b7;">No camera make/model detected</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <p style="font-size:0.78rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.8rem;">Anomaly Score Distribution</p>
+                    <div style="display:flex;flex-direction:column;gap:0.8rem;margin-bottom:1.2rem;">
+                        <div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                <span style="font-size:0.8rem;color:#94a3b8;">evidence_cairo_center.jpg</span>
+                                <span style="font-size:0.8rem;color:#34d399;font-weight:600;">0 flags</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill" data-width="0" style="background:linear-gradient(90deg,#34d399,#6ee7b7);"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                <span style="font-size:0.8rem;color:#94a3b8;">evidence_giza.jpg</span>
+                                <span style="font-size:0.8rem;color:#34d399;font-weight:600;">0 flags</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill" data-width="0" style="background:linear-gradient(90deg,#34d399,#6ee7b7);"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                <span style="font-size:0.8rem;color:#94a3b8;">evidence_suspicious.jpg</span>
+                                <span style="font-size:0.8rem;color:#ef4444;font-weight:600;">2 flags</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill" data-width="80" style="background:linear-gradient(90deg,#ef4444,#f87171);"></div><div class="bar-val">HIGH RISK</div></div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:1rem;">
+                        <p style="font-size:0.82rem;color:#fca5a5;line-height:1.6;margin:0;"><strong style="color:#ef4444;">Forensic Conclusion:</strong> The suspicious image shows signs of post-processing with Adobe Photoshop and had its GPS data removed — indicating intentional metadata manipulation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: GPS MAP & TIMELINE -->
+    <div class="slide slide-7" data-slide="7">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#818cf8;opacity:0.09;"></div>
+            <div class="blob" style="width:260px;height:260px;bottom:-60px;left:-40px;background:#38bdf8;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#818cf8;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Geolocation</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">GPS Map & Evidence Timeline</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">Evidence Location Timeline</h3>
+                    <div style="position:relative;padding-left:3rem;">
+                        <div class="timeline-line"></div>
+                        <div style="display:flex;flex-direction:column;gap:1.2rem;">
+                            <div style="display:flex;gap:1rem;align-items:flex-start;">
+                                <div class="timeline-dot" style="position:absolute;left:14px;"></div>
+                                <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.18);border-radius:10px;padding:0.8rem 1rem;width:100%;">
+                                    <div style="font-size:0.72rem;color:#38bdf8;margin-bottom:3px;">10:30 AM · EVD-001</div>
+                                    <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">Cairo City Center</div>
+                                    <div style="font-size:0.75rem;color:#64748b;">30.0444°N, 31.2357°E · Alt: 74m</div>
+                                    <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">Samsung Galaxy S23 · No anomalies</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:1rem;align-items:flex-start;">
+                                <div class="timeline-dot" style="position:absolute;left:14px;margin-top:120px;background:#818cf8;box-shadow:0 0 10px rgba(129,140,248,0.6);"></div>
+                                <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.18);border-radius:10px;padding:0.8rem 1rem;width:100%;">
+                                    <div style="font-size:0.72rem;color:#818cf8;margin-bottom:3px;">14:15 PM · EVD-002</div>
+                                    <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">Giza Pyramids Area</div>
+                                    <div style="font-size:0.75rem;color:#64748b;">29.9773°N, 31.1325°E · Alt: 25m</div>
+                                    <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">Apple iPhone 15 Pro · No anomalies</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:1rem;align-items:flex-start;">
+                                <div class="timeline-dot" style="position:absolute;left:14px;margin-top:240px;background:#ef4444;box-shadow:0 0 10px rgba(239,68,68,0.6);"></div>
+                                <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:0.8rem 1rem;width:100%;">
+                                    <div style="font-size:0.72rem;color:#ef4444;margin-bottom:3px;">18:00 PM · EVD-003</div>
+                                    <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">⚠ Location Unknown</div>
+                                    <div style="font-size:0.75rem;color:#ef4444;">GPS data stripped · Photoshop detected</div>
+                                    <div style="font-size:0.72rem;color:#94a3b8;margin-top:3px;">Unknown Camera · 2 anomaly flags</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;">Map Features</h3>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.2rem;">📍</span>
+                            <div><div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">MarkerCluster Layer</div><div style="font-size:0.75rem;color:#64748b;">Color-coded: Blue=clean, Orange=1 flag, Red=2+ flags</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.2rem;">⏱️</span>
+                            <div><div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">TimestampedGeoJson</div><div style="font-size:0.75rem;color:#64748b;">Animated timeline — watch evidence appear in order</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.2rem;">💬</span>
+                            <div><div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">Click Popups</div><div style="font-size:0.75rem;color:#64748b;">File name, camera, timestamp, GPS, SHA-256 hash</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.2rem;">🌍</span>
+                            <div><div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;">OpenStreetMap Tiles</div><div style="font-size:0.75rem;color:#64748b;">Auto-centered on evidence centroid, zoom 12</div></div>
+                        </div>
+                        <div style="margin-top:0.4rem;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.18);border-radius:10px;padding:0.9rem 1rem;">
+                            <div style="font-size:0.8rem;color:#38bdf8;font-weight:600;">📦 Output File: <code>output/map.html</code></div>
+                            <div style="font-size:0.75rem;color:#64748b;margin-top:3px;">12,931 bytes · Fully interactive in any browser</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: CHAIN OF CUSTODY -->
+    <div class="slide slide-8" data-slide="8">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:360px;height:360px;top:-80px;right:-80px;background:#f59e0b;opacity:0.08;"></div>
+            <div class="blob" style="width:240px;height:240px;bottom:-50px;left:-40px;background:#34d399;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#f59e0b;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Evidence Integrity</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">Chain of Custody & SHA-256 Hashing</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+                <div class="reveal">
+                    <p style="font-size:0.85rem;color:#94a3b8;line-height:1.6;margin-bottom:1rem;">Every evidence file is hashed with SHA-256 before analysis. The chain of custody CSV records the full audit trail — who analyzed it, when, and the cryptographic fingerprint.</p>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:0.9rem 1rem;">
+                            <div style="font-size:0.72rem;color:#f59e0b;margin-bottom:4px;">EVD-001 · evidence_cairo_center.jpg</div>
+                            <div style="font-family:monospace;font-size:0.65rem;color:#94a3b8;word-break:break-all;">7f6262ee7af019e6002fd16dd002a3e0<br>0b30575fed4e2a1266487dad77408b16</div>
+                        </div>
+                        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:0.9rem 1rem;">
+                            <div style="font-size:0.72rem;color:#f59e0b;margin-bottom:4px;">EVD-002 · evidence_giza.jpg</div>
+                            <div style="font-family:monospace;font-size:0.65rem;color:#94a3b8;word-break:break-all;">ea38997592c989672e7fa560d92c6073<br>a91e0251f8ba0db3cc81d889efa20123</div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:0.9rem 1rem;">
+                            <div style="font-size:0.72rem;color:#ef4444;margin-bottom:4px;">EVD-003 · evidence_suspicious.jpg ⚠</div>
+                            <div style="font-family:monospace;font-size:0.65rem;color:#94a3b8;word-break:break-all;">c755f8f2a8e9ed74af94c827b18e3b06<br>0c59b7cf02fd580faec87fb2d33fb1e4</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#64748b;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.8rem;">Output Files Generated</h3>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.1rem;">📄</span>
+                            <div><div style="font-size:0.85rem;font-weight:600;color:#38bdf8;font-family:monospace;">forensic_report.html</div><div style="font-size:0.73rem;color:#64748b;">Full evidence report with case ID</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.1rem;">🗺️</span>
+                            <div><div style="font-size:0.85rem;font-weight:600;color:#818cf8;font-family:monospace;">map.html</div><div style="font-size:0.73rem;color:#64748b;">Interactive Folium map (12,931 bytes)</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.1rem;">📊</span>
+                            <div><div style="font-size:0.85rem;font-weight:600;color:#34d399;font-family:monospace;">metadata_results.csv</div><div style="font-size:0.73rem;color:#64748b;">23 columns per image — full EXIF table</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.1rem;">⛓️</span>
+                            <div><div style="font-size:0.85rem;font-weight:600;color:#f59e0b;font-family:monospace;">chain_of_custody.csv</div><div style="font-size:0.73rem;color:#64748b;">Audit log with SHA-256 + analyst + timestamp</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                            <span style="font-size:1.1rem;">🔡</span>
+                            <div><div style="font-size:0.85rem;font-weight:600;color:#a855f7;font-family:monospace;">raw_metadata.json</div><div style="font-size:0.73rem;color:#64748b;">Raw EXIF tags for all images</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: CHALLENGES & FUTURE -->
+    <div class="slide slide-9" data-slide="9">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:370px;height:370px;top:-80px;left:-80px;background:#818cf8;opacity:0.09;"></div>
+            <div class="blob" style="width:250px;height:250px;bottom:-60px;right:-50px;background:#34d399;opacity:0.07;"></div>
+        </div>
+        <div class="content">
+            <p style="font-size:0.78rem;color:#818cf8;letter-spacing:5px;text-transform:uppercase;margin-bottom:0.6rem;" class="reveal">Reflection</p>
+            <h2 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:1.4rem;" class="reveal">Challenges & Future Improvements</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;">
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#ef4444;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.9rem;">⚠ Challenges Faced</h3>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="border-left:3px solid #ef4444;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">PNG Format Limitation</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">PNG files rarely contain GPS/EXIF data — tool detects this and flags it accordingly.</div>
+                        </div>
+                        <div style="border-left:3px solid #ef4444;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">DMS Coordinate Parsing</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Different cameras encode DMS fractions differently — required robust rational number parsing with edge case handling.</div>
+                        </div>
+                        <div style="border-left:3px solid #ef4444;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">Evidence Without Metadata</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Stripped EXIF files still need to be processed gracefully without crashing the pipeline.</div>
+                        </div>
+                        <div style="border-left:3px solid #ef4444;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">Folium Timestamp Layer</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">TimestampedGeoJson requires ISO 8601 format — had to build a custom ts_to_iso() converter.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <h3 style="font-size:0.85rem;color:#34d399;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.9rem;">🚀 Future Improvements</h3>
+                    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+                        <div style="border-left:3px solid #34d399;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">PyQt5 Desktop GUI</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Replace CLI with a full desktop interface — drag & drop evidence folders, real-time analysis progress.</div>
+                        </div>
+                        <div style="border-left:3px solid #34d399;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">AI-Powered Anomaly Scoring</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Train an ML model on known manipulated images to provide probabilistic tampering scores.</div>
+                        </div>
+                        <div style="border-left:3px solid #34d399;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">Bulk Video Support</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Extend to MP4/MOV files — extract GPS tracks embedded in video metadata (Apple & Android).</div>
+                        </div>
+                        <div style="border-left:3px solid #34d399;padding-left:0.9rem;">
+                            <div style="font-size:0.88rem;font-weight:600;color:#f1f5f9;margin-bottom:2px;">Blockchain Chain of Custody</div>
+                            <div style="font-size:0.78rem;color:#94a3b8;">Record SHA-256 hashes on a local blockchain (Ganache) for immutable, court-admissible evidence logs.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: THANK YOU -->
+    <div class="slide slide-10" data-slide="10">
+        <div class="gradient-mesh">
+            <div class="blob" style="width:520px;height:520px;top:-120px;right:-100px;background:#38bdf8;opacity:0.13;"></div>
+            <div class="blob" style="width:320px;height:320px;bottom:-80px;left:-60px;background:#818cf8;opacity:0.11;"></div>
+            <div class="blob" style="width:220px;height:220px;top:45%;left:18%;background:#34d399;opacity:0.08;"></div>
+        </div>
+        <canvas class="particle-canvas" style="position:absolute;inset:0;z-index:1;width:100%;height:100%;"></canvas>
+        <div class="content text-center">
+            <div style="font-size:80px;margin-bottom:1rem;animation:float 3s ease-in-out infinite;" class="reveal">🎓</div>
+            <h1 style="font-family:'Instrument Serif',Georgia,serif;font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:700;background:linear-gradient(135deg,#38bdf8,#818cf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:0.8rem;" class="reveal">Thank You</h1>
+            <p style="font-size:clamp(0.85rem,1.4vw,1.1rem);color:#64748b;letter-spacing:5px;text-transform:uppercase;margin-bottom:2rem;" class="reveal">Questions & Live Demo</p>
+            <div style="display:flex;flex-direction:column;gap:0.8rem;max-width:480px;margin:0 auto;" class="reveal">
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:0.9rem 1.4rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.2rem;">📘</span>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.75rem;color:#64748b;">Course</div>
+                        <div style="font-size:0.88rem;color:#f1f5f9;">CET333 — Advanced Digital Forensics</div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:0.9rem 1.4rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.2rem;">👨‍🏫</span>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.75rem;color:#64748b;">Instructor</div>
+                        <div style="font-size:0.88rem;color:#f1f5f9;">Dr. Ayman Taha — Elsewedy University of Technology</div>
+                    </div>
+                </div>
+                <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:0.9rem 1.4rem;display:flex;align-items:center;gap:0.8rem;">
+                    <span style="font-size:1.2rem;">💻</span>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.75rem;color:#38bdf8;">Run the Tool</div>
+                        <div style="font-size:0.82rem;color:#94a3b8;font-family:monospace;">python forensic_tool.py --input evidence/ --output output/</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav-controls">
+    <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+    <div class="slide-dots" id="dots"></div>
+    <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+    <span class="slide-counter" id="counter">1 / 10</span>
+</div>
+
+<script>
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+    const dotsContainer = document.getElementById('dots');
+    const counter = document.getElementById('counter');
+    for (let i = 1; i <= total; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (i === 1 ? ' active' : '');
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+    }
+    function goToSlide(n) {
+        const prev = document.querySelector('.slide.active');
+        const next = document.querySelector('.slide[data-slide="' + n + '"]');
+        if (prev) prev.classList.remove('active');
+        if (next) { next.classList.add('active'); animateSlide(next); }
+        current = n; updateNav();
+    }
+    function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
+    function updateNav() {
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+        counter.textContent = current + ' / ' + total;
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+    });
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => { const diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) changeSlide(diff > 0 ? 1 : -1); });
+
+    function animateSlide(slide) {
+        slide.querySelectorAll('.reveal').forEach((el, i) => {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.offsetHeight;
+            const delay = i * 0.08;
+            el.style.transition = 'opacity 0.35s ease ' + delay + 's, transform 0.35s ease ' + delay + 's';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        });
+        animateEffects(slide);
+    }
+
+    function animateEffects(slide) {
+        slide.querySelectorAll('[data-count]:not(.counted)').forEach(el => {
+            el.classList.add('counted');
+            const target = parseInt(el.dataset.count);
+            let cur = 0; const step = Math.max(1, target / 30);
+            const timer = setInterval(() => {
+                cur += step;
+                if (cur >= target) { cur = target; clearInterval(timer); }
+                el.textContent = Math.round(cur);
+            }, 40);
+        });
+        slide.querySelectorAll('.bar-fill:not(.fill-init)').forEach((bar, i) => {
+            bar.classList.add('fill-init');
+            bar.style.width = '0%';
+            bar.style.transition = 'width 0.7s ease ' + (i * 0.1) + 's';
+            bar.offsetHeight;
+            bar.style.width = (bar.dataset.width || 0) + '%';
+        });
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        const s = document.querySelector('.mouse-spotlight');
+        if (s) s.style.background = 'radial-gradient(600px circle at ' + e.clientX + 'px ' + e.clientY + 'px, rgba(56,189,248,0.05), transparent 40%)';
+    });
+
+    window.initParticles = function(canvas) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+        resize();
+        window.addEventListener('resize', resize);
+        let mx = -1000, my = -1000;
+        const particles = Array.from({length: 50}, () => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+            size: Math.random() * 2 + 0.8, alpha: Math.random() * 0.3 + 0.1
+        }));
+        canvas.addEventListener('mousemove', (e) => { const r = canvas.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; });
+        canvas.addEventListener('mouseleave', () => { mx = -1000; my = -1000; });
+        (function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 120) { const f = (120 - dist) / 120 * 2; p.vx += (dx/dist)*f*0.1; p.vy += (dy/dist)*f*0.1; }
+                p.vx *= 0.98; p.vy *= 0.98; p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(56,189,248,' + p.alpha + ')'; ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        })();
+    };
+    document.querySelectorAll('.particle-canvas').forEach(c => initParticles(c));
+
+    animateSlide(document.querySelector('.slide.active'));
+</script>
+</body>
+</html>

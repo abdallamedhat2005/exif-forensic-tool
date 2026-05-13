@@ -33,9 +33,9 @@ python forensic_tool.py --input evidence/ --output output/
 | output/raw_metadata.json | Raw EXIF data |
 
 ## Team
-- Student 1: EXIF Extraction & GPS Decoding
-- Student 2: Map, Report & Anomaly Detection
-- Student 3: Testing, Documentation & Presentation
+- Student 1: Abdalla medhat
+- Student 2: Mahmoud ibrahim
+- Student 3: Omar osama 
 
 ## Instructor
 Dr. Ayman Taha - Elsewedy University of Technology
