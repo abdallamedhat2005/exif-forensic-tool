@@ -1,0 +1,15 @@
+evidence_id,file_name,sha256,timestamp,gps,anomaly_flags,analyzed_at,analyst
+EVD-001,case1_full_gps_cairo.jpg,c4221b194425e3486666e76994d9f1cd60b45d2b39ba69a4eb203bb31a0654c7,2026:03:14 10:30:00,"30.0443972,31.2357",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-002,case2_full_gps_giza.jpg,1d1d325dcd96f20ac70c027fa6589e3e90455c19e9d98d9e0dd0fe00f0f1cf13,2026:03:14 14:15:00,"29.9772972,31.1325",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-003,case3_no_gps_canon_dslr.jpg,b4ea1c0d6fb132b98627d8a9230ed2b6e2f0bd7fc06b5687405d4fac3dedd99a,2026:01:10 09:00:00,N/A,Missing GPS coordinates,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-004,case4_suspicious_manipulated.jpg,2c909e237513f53819ed909a9fb8f75cbedd722224775aaaec50118b6ca7138d,2030:01:01 00:00:00,N/A,Missing GPS coordinates | Software tag: GIMP 2.10 - possible post-processing,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-005,case5_no_exif_stripped_whatsapp.jpg,5433915953c5ec48e30f84e6b82cdb9fac212f2996ce40efc2066294576ea5b7,N/A,N/A,No EXIF metadata - possible intentional stripping | Missing original timestamp | Missing GPS coordinates,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-006,case6_gps_alexandria.jpg,e7beccea077be5bde1b3f5444cb3a5698469c6157e975f9b2e19b358f880f17c,2026:02:20 16:45:00,"31.2000972,29.9187",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-007,case7_old_camera_2006.jpg,67ef40af7f9d38a64fc054024942cced53923dd8b31b6852734f82b4c2eb764c,2006:08:15 17:50:57,N/A,Missing GPS coordinates,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-008,case8_gps_luxor.jpg,599f7131cdd959d0362c85a6c7d327f267b1d1436b47e7b75d83c4c944e9f9fd,2026:03:14 08:00:00,"25.6872,32.6396",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-009,evidence_cairo_center.jpg,7f6262ee7af019e6002fd16dd002a3e00b30575fed4e2a1266487dad77408b16,2026:03:14 10:30:00,"30.0444,31.2357",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-010,evidence_giza.jpg,ea38997592c989672e7fa560d92c6073a91e0251f8ba0db3cc81d889efa20123,2026:03:14 14:15:00,"29.9773,31.1325",None,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-011,evidence_suspicious.jpg,c755f8f2a8e9ed74af94c827b18e3b060c59b7cf02fd580faec87fb2d33fb1e4,2026:03:14 18:00:00,N/A,Missing GPS coordinates | Software tag: Adobe Photoshop 2026 - possible post-processing,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-012,Samsung_Digimax_i50_MP3.jpg,e61da5ee8d7ba1726bd0a887216ed5ae7ca38c97fcf7aac11b808e1c269e1722,2006:08:15 17:50:57,N/A,Missing GPS coordinates | Software tag: GIMP 2.4.5 - possible post-processing,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-013,Sony_HDR-HC3.jpg,4f707d9b40d423a5246748bc1e05b66c4b87e30863f7a51ce18904a7ec43a39e,2007:06:15 04:42:32,N/A,Missing GPS coordinates,2026-05-13 19:48:38,Forensic Tool GUI v2.0
+EVD-014,WhatsApp Image 2026-05-07 at 5.09.08 PM (1).jpeg,b6515d2ed1af5597d974ecd4916ec1dd0e72a0b162410a2dfbd0f0869fc6db72,N/A,N/A,No EXIF metadata - possible intentional stripping | Missing original timestamp | Missing GPS coordinates,2026-05-13 19:48:38,Forensic Tool GUI v2.0
